@@ -1,0 +1,92 @@
+version: '3'
+
+vars:
+    CURDIR:
+        sh: pwd
+    NAME:
+        sh: pwd | grep -Po "[^/]+$"
+    LOCAL_IP:
+        sh: hostname -I | grep -Po "^[0-9\.]+"
+    SUDO:
+        sh: |
+            if [[ "root" == "root" ]]; then
+                echo sudo
+            fi
+    EXAMPLE_COREFILE: conf/Corefile
+
+tasks:
+    default:
+        desc: default action, build and run the container
+        cmds:
+            - task: build
+            - task: run
+
+    fetch_bin:
+        desc: fetch coredns binary and prepare copying it into the container
+        cmds:
+            - cmd: mkdir -p "{{.CURDIR}}/docker/bin"
+            - cmd: cp -f "$(which coredns)" "{{.CURDIR}}/docker/bin/"
+
+    run_dns:
+        desc: run a dns, it is needed temporary during the docker build process
+        cmds:
+            - cmd: |
+                if [[ {{.SUDO}} == "sudo" ]]; then
+                    sudo -v
+                fi
+            - cmd: |
+                if [[ -z $(pgrep coredns) ]]; then
+                    {{.SUDO}} coredns --conf "{{.CURDIR}}/{{.EXAMPLE_COREFILE}}" --quiet &
+                else
+                    echo "CoreDNS already running. Skip starting it."
+                fi
+
+    kill_dns:
+        desc: kill the temporary dns server
+        cmds:
+            - cmd: "{{.SUDO}} pkill -9 coredns"
+
+    build:
+        desc: build the docker container
+        dir: docker
+        cmds:
+            - task: run_dns
+            - task: fetch_bin
+            - cmd: docker build --tag {{.NAME}} .
+            - task: kill_dns
+
+    run:
+        desc: run the container
+        dir: docker
+        cmds:
+            - cmd: mkdir -p "{{.CURDIR}}/docker/vol/conf"
+            - cmd: cp -f "{{.CURDIR}}/{{.EXAMPLE_COREFILE}}" "{{.CURDIR}}/docker/vol/conf/"
+            - cmd: >-
+                docker run -d --restart always
+                --name {{.NAME}}
+                --volume "{{.CURDIR}}/docker/vol:/vol"
+                -p "{{.EP}}:53/tcp"
+                -p "{{.EP}}:53/udp"
+                {{.NAME}}
+        vars:
+            EP:
+                sh: |
+                    if [[ "{{.CLI_ARGS}}" =~ ^[0-9]+$ ]]; then
+                        echo {{.CLI_ARGS}}
+                    else
+                        echo 53
+                    fi
+
+    rm:
+        desc: remove images and containers
+        dir: docker
+        cmds:
+            - cmd: docker rm -f {{.NAME}}
+            - cmd: docker rmi -f {{.NAME}}
+
+    rebuild:
+        desc: remove and rebuild images and container
+        cmds:
+            - task: rm
+            - task: build
+            - task: run

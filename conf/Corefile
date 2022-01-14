@@ -1,0 +1,12 @@
+.:53 {
+    reload 60s 30s
+    health
+    log
+    errors
+    hosts {
+        111.111.111.111 example.aip
+        112.112.112.112 example.escience
+        fallthrough
+    }
+    forward . 1.1.1.1 8.8.8.8 141.33.5.209
+}
