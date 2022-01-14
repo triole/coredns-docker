@@ -60,7 +60,10 @@ tasks:
         dir: docker
         cmds:
             - cmd: mkdir -p "{{.CURDIR}}/docker/vol/conf"
-            - cmd: cp -f "{{.CURDIR}}/{{.EXAMPLE_COREFILE}}" "{{.CURDIR}}/docker/vol/conf/"
+            - cmd: |
+                if [[ ! -f "{{.CURDIR}}/{{.EXAMPLE_COREFILE}}" ]]; then
+                    cp -f "{{.CURDIR}}/{{.EXAMPLE_COREFILE}}" "{{.CURDIR}}/docker/vol/conf/"
+                fi
             - cmd: >-
                 docker run -d --restart always
                 --name {{.NAME}}
