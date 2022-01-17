@@ -59,15 +59,15 @@ tasks:
         desc: run the container
         dir: docker
         cmds:
-            - cmd: mkdir -p "{{.CURDIR}}/docker/vol/conf"
+            - cmd: mkdir -p "{{.CURDIR}}/vol/conf"
             - cmd: |
                 if [[ ! -f "{{.CURDIR}}/{{.EXAMPLE_COREFILE}}" ]]; then
-                    cp -f "{{.CURDIR}}/{{.EXAMPLE_COREFILE}}" "{{.CURDIR}}/docker/vol/conf/"
+                    cp -f "{{.CURDIR}}/{{.EXAMPLE_COREFILE}}" "{{.CURDIR}}/vol/conf/"
                 fi
             - cmd: >-
                 docker run -d --restart always
                 --name {{.NAME}}
-                --volume "{{.CURDIR}}/docker/vol:/vol"
+                --volume "{{.CURDIR}}/vol:/vol"
                 -p "{{.EP}}:53/tcp"
                 -p "{{.EP}}:53/udp"
                 {{.NAME}}
