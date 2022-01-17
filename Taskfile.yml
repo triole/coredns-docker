@@ -65,7 +65,6 @@ tasks:
                 if [[ ! -f "{{.CURDIR}}/{{.COREFILE_LIVE}}" ]]; then
                     cp -f "{{.CURDIR}}/{{.COREFILE_EXAMPLE}}" "{{.CURDIR}}/{{.COREFILE_LIVE}}"
                 fi
-            - cmd: exit 1
             - cmd: >-
                 docker run -d --restart always
                 --name {{.NAME}}
