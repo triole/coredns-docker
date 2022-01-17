@@ -12,7 +12,8 @@ vars:
             if [[ "root" == "root" ]]; then
                 echo sudo
             fi
-    EXAMPLE_COREFILE: conf/Corefile
+    COREFILE_EXAMPLE: conf/Corefile
+    COREFILE_LIVE: vol/conf//Corefile
 
 tasks:
     default:
@@ -36,7 +37,7 @@ tasks:
                 fi
             - cmd: |
                 if [[ -z $(pgrep coredns) ]]; then
-                    {{.SUDO}} coredns --conf "{{.CURDIR}}/{{.EXAMPLE_COREFILE}}" --quiet &
+                    {{.SUDO}} coredns --conf "{{.CURDIR}}/{{.COREFILE_EXAMPLE}}" --quiet &
                 else
                     echo "CoreDNS already running. Skip starting it."
                 fi
@@ -61,9 +62,10 @@ tasks:
         cmds:
             - cmd: mkdir -p "{{.CURDIR}}/vol/conf"
             - cmd: |
-                if [[ ! -f "{{.CURDIR}}/{{.EXAMPLE_COREFILE}}" ]]; then
-                    cp -f "{{.CURDIR}}/{{.EXAMPLE_COREFILE}}" "{{.CURDIR}}/vol/conf/"
+                if [[ ! -f "{{.CURDIR}}/{{.COREFILE_LIVE}}" ]]; then
+                    cp -f "{{.CURDIR}}/{{.COREFILE_EXAMPLE}}" "{{.CURDIR}}/{{.COREFILE_LIVE}}"
                 fi
+            - cmd: exit 1
             - cmd: >-
                 docker run -d --restart always
                 --name {{.NAME}}
