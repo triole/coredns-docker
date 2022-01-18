@@ -13,7 +13,7 @@ vars:
                 echo sudo
             fi
     COREFILE_EXAMPLE: conf/Corefile
-    COREFILE_LIVE: vol/conf//Corefile
+    COREFILE_LIVE: vol/conf/Corefile
 
 tasks:
     default:
